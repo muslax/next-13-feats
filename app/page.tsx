@@ -53,10 +53,12 @@ async function getData(isAuth: boolean) {
 
 export default async function Home() {
   const headersList = headers();
-  const nextCookie = cookies();
-  const user = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
   const referer = headersList.get("referer");
-  const isAuth = user && user.value.length > 100 ? true : false;
+
+  const nextCookie = cookies();
+  const sess = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
+
+  const isAuth = sess && sess?.value?.length > 100 ? true : false;
   const { movies, limit, skip } = await getData(isAuth);
 
   return (
