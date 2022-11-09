@@ -1,77 +1,16 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { SessionUser } from "@/api/user";
-import { unsealData } from "iron-session";
-import clientPromise from "lib/mongodb";
-import { ReadonlyRequestCookies } from "next/dist/server/app-render";
 import Session from "./Session";
+import { cookies } from "next/headers";
+import { getMovies } from "@/lib/getMovies";
+import { getUserCookie } from "@/lib/getUserCookie";
 
 // export const dynamic = "auto";
 // export const dynamicParams = true;
 
-async function getData(auth: boolean) {
-  const strTime = new Date().getTime().toString();
-  console.log(strTime);
-
-  let limit = parseInt(strTime.slice(9, 11));
-  let skip = parseInt(strTime.slice(11, 13));
-
-  if (strTime.charAt(9) == "0" && strTime.charAt(11) == "0") {
-    limit = 10;
-    skip = 0;
-  }
-
-  if (limit % 2 == 0 && skip > 0) skip = limit * skip;
-
-  console.log("Limit/skip:", limit, skip);
-
-  if (!auth) limit = 1;
-
-  const client = await clientPromise;
-  const collection = client.db("sample_mflix").collection("movies");
-  const rs = await collection
-    .find(
-      { poster: { $exists: true } },
-      {
-        limit,
-        skip,
-        projection: {
-          title: 1,
-          cast: 1,
-          poster: 1,
-        },
-      }
-    )
-    .toArray();
-
-  const data = {
-    movies: rs,
-    limit,
-    skip,
-  };
-  return JSON.parse(JSON.stringify(data));
-}
-
-async function getUserCookie(
-  cookies: ReadonlyRequestCookies
-): Promise<SessionUser | null> {
-  const cookieName = process.env.SESSION_COOKIE_NAME as string;
-  const found = cookies.get(cookieName);
-
-  if (!found) return null;
-
-  const { user } = await unsealData(found.value, {
-    password: process.env.SESSION_COOKIE_PASSWORD as string,
-  });
-
-  return user as unknown as SessionUser;
-}
-
 export default async function Home() {
-  const _cookies = cookies();
-  const user = await getUserCookie(_cookies);
+  const user = await getUserCookie(cookies());
   const logged = user != null;
-  const { movies, limit, skip } = await getData(logged);
+  const { movies, limit, skip } = await getMovies(logged);
 
   return (
     <>
