@@ -6,7 +6,7 @@ import Session from "./Session";
 // export const dynamic = "auto";
 // export const dynamicParams = true;
 
-async function getData(isAuth: boolean) {
+async function getData() {
   const strTime = new Date().getTime().toString();
   console.log(strTime);
 
@@ -27,7 +27,7 @@ async function getData(isAuth: boolean) {
 
   console.log("Limit/skip:", limit, skip);
 
-  if (!isAuth) limit = 1;
+  // if (!isAuth) limit = 1;
 
   const client = await clientPromise;
   const collection = client.db("sample_mflix").collection("movies");
@@ -58,10 +58,10 @@ export default async function Home() {
   const headersList = headers();
   const referer = headersList.get("referer");
 
-  const nextCookie = cookies();
-  const sess = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
-  const isAuth = sess !== undefined;
-  const { movies, limit, skip } = await getData(isAuth);
+  // const nextCookie = cookies();
+  // const sess = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
+  // const isAuth = sess !== undefined;
+  const { movies, limit, skip } = await getData();
 
   return (
     <>
