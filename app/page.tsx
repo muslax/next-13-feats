@@ -11,17 +11,20 @@ async function getData(isAuth: boolean) {
   console.log(strTime);
 
   let limit = parseInt(strTime.slice(9, 11));
-  if (limit > 80) limit = 15;
-  if (limit < 10) limit = 10;
+  // if (limit > 80) limit = 15;
+  // if (limit < 10) limit = 10;
 
   let skip = parseInt(strTime.slice(11, 13));
   // if (skip > 80) skip = 15;
   // if (skip < 10) skip = 10;
 
-  if (strTime.charAt(9) == "0") {
+  if (strTime.charAt(9) == "0" && strTime.charAt(11) == "0") {
     limit = 10;
     skip = 0;
   }
+
+  if (limit % 2 == 0 && skip > 0) skip = limit * skip;
+
   console.log("Limit/skip:", limit, skip);
 
   if (!isAuth) limit = 1;
@@ -57,8 +60,7 @@ export default async function Home() {
 
   const nextCookie = cookies();
   const sess = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
-
-  const isAuth = sess && sess?.value?.length > 100 ? true : false;
+  const isAuth = sess !== undefined;
   const { movies, limit, skip } = await getData(isAuth);
 
   return (
@@ -68,7 +70,9 @@ export default async function Home() {
 
         <Session />
 
-        <p style={{ marginTop: 0, fontSize: 14, color: "#567" }}>{referer}</p>
+        <pre style={{ marginTop: 5, fontSize: 10, color: "#a0Afa9" }}>
+          Referer: {referer}
+        </pre>
 
         <p style={{ fontWeight: 600 }}>
           Serving {movies.length} titles [{limit} - {skip}]
@@ -95,6 +99,8 @@ export default async function Home() {
             {JSON.stringify(movies, null, 2)}
           </pre>
         </div>
+
+        {/* <pre>{JSON.stringify(sess)}</pre> */}
       </div>
     </>
   );

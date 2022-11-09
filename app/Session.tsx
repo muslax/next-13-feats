@@ -45,7 +45,6 @@ export default function Session() {
       style={{
         borderTop: "1px solid #7b9",
         borderBottom: "1px solid #7b9",
-        marginBottom: 10,
         backgroundColor: submitting ? "#f0fff9" : "",
         display: "flex",
         alignItems: "center",
