@@ -1,22 +1,20 @@
-import clientPromise from "lib/mongodb";
-import { cookies, headers } from "next/headers";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { SessionUser } from "@/api/user";
+import { unsealData } from "iron-session";
+import clientPromise from "lib/mongodb";
+import { ReadonlyRequestCookies } from "next/dist/server/app-render";
 import Session from "./Session";
 
 // export const dynamic = "auto";
 // export const dynamicParams = true;
 
-async function getData() {
+async function getData(auth: boolean) {
   const strTime = new Date().getTime().toString();
   console.log(strTime);
 
   let limit = parseInt(strTime.slice(9, 11));
-  // if (limit > 80) limit = 15;
-  // if (limit < 10) limit = 10;
-
   let skip = parseInt(strTime.slice(11, 13));
-  // if (skip > 80) skip = 15;
-  // if (skip < 10) skip = 10;
 
   if (strTime.charAt(9) == "0" && strTime.charAt(11) == "0") {
     limit = 10;
@@ -27,7 +25,7 @@ async function getData() {
 
   console.log("Limit/skip:", limit, skip);
 
-  // if (!isAuth) limit = 1;
+  if (!auth) limit = 1;
 
   const client = await clientPromise;
   const collection = client.db("sample_mflix").collection("movies");
@@ -54,25 +52,35 @@ async function getData() {
   return JSON.parse(JSON.stringify(data));
 }
 
-export default async function Home() {
-  const headersList = headers();
-  const referer = headersList.get("referer");
+async function getUserCookie(
+  cookies: ReadonlyRequestCookies
+): Promise<SessionUser | null> {
+  const cookieName = process.env.SESSION_COOKIE_NAME as string;
+  const found = cookies.get(cookieName);
 
-  // const nextCookie = cookies();
-  // const sess = nextCookie.get(process.env.SESSION_COOKIE_NAME as string);
-  // const isAuth = sess !== undefined;
-  const { movies, limit, skip } = await getData();
+  if (!found) return null;
+
+  const { user } = await unsealData(found.value, {
+    password: process.env.SESSION_COOKIE_PASSWORD as string,
+  });
+
+  return user as unknown as SessionUser;
+}
+
+export default async function Home() {
+  const _cookies = cookies();
+  const user = await getUserCookie(_cookies);
+  const logged = user != null;
+  const { movies, limit, skip } = await getData(logged);
 
   return (
     <>
       <div style={{ margin: "0 1rem" }}>
         <h1 style={{ marginBottom: 10 }}>Next 13 Movies</h1>
 
-        <Session />
+        <Session user={user} />
 
-        <pre style={{ marginTop: 5, fontSize: 10, color: "#a0Afa9" }}>
-          Referer: {referer}
-        </pre>
+        <pre>{JSON.stringify(user, null, 2)}</pre>
 
         <p style={{ fontWeight: 600 }}>
           Serving {movies.length} titles [{limit} - {skip}]
@@ -99,8 +107,6 @@ export default async function Home() {
             {JSON.stringify(movies, null, 2)}
           </pre>
         </div>
-
-        {/* <pre>{JSON.stringify(sess)}</pre> */}
       </div>
     </>
   );
