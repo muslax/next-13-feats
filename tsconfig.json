@@ -19,6 +19,14 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
+    "paths": {
+      "@/api/*": [
+        "pages/api/*"
+      ],
+      "@/lib/*": [
+        "lib/*"
+      ]
+    },
     "plugins": [
       {
         "name": "next"
