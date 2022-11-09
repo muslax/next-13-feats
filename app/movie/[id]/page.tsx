@@ -1,5 +1,6 @@
 import clientPromise from "lib/mongodb";
 import { ObjectId } from "mongodb";
+import BackLinks from "./BackLinks";
 
 async function getMovie(id: string) {
   try {
@@ -39,14 +40,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           <img src={movie.poster} style={{ height: "100%" }} />
         </figure>
 
-        <p style={{ margin: "0.5rem 0" }}>
-          {/* <Link style={{ color: "blue" }} href="/">
-            Back
-          </Link> */}
-          <a style={{ color: "blue" }} href="/">
-            Back
-          </a>
-        </p>
+        <BackLinks />
 
         <div
           style={{

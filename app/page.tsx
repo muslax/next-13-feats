@@ -2,7 +2,7 @@ import clientPromise from "lib/mongodb";
 import { headers } from "next/headers";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "auto";
 // export const dynamicParams = true;
 
 async function getData() {
