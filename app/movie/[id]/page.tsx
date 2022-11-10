@@ -1,7 +1,15 @@
+import { cookies } from "next/headers";
 import { getMovie } from "@/lib/getMovie";
+import { getUserCookie } from "@/lib/getUserCookie";
 import BackLinks from "./BackLinks";
+import { redirect } from "next/navigation";
 
 export default async function Page({ params }: { params: { id: string } }) {
+  const user = await getUserCookie(cookies());
+  if (!user) {
+    redirect("/");
+  }
+
   const { id } = params;
   const movie = await getMovie(id);
 
